@@ -63,3 +63,6 @@ jobs:
           slot-name: 'Production'
           package: .
           
+    env:  # Add environment variables here
+        mongoURI: ${{secrets.MONGODB_URI}}
+        REDISCLIENT: ${{secrets.IOREDIS}}

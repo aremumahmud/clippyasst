@@ -24,7 +24,7 @@ const io = socketIo(server, {
 
 app.use(express.json())
 app.use(express.urlencoded()) // Connect to MongoDB
-mongoose.connect(process.mongoURI || 'mongodb://localhost:27017/clipboard', {
+mongoose.connect(process.env.mongoURI || 'mongodb://localhost:27017/clipboard', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
