@@ -21,10 +21,17 @@ jobs:
         with:
           node-version: '18.x'
 
+
+      - name: Print environment variables
+        run: |
+          echo "mongoURI: $MONGODB_URI"
+          echo "REDISCLIENT: $IOREDIS"
+
       - name: npm install, build, and test
         env:  # Add environment variables here
           mongoURI: ${{secrets.MONGODB_URI}}
           REDISCLIENT: ${{secrets.IOREDIS}}
+        
         run: |
           npm install
           npm run build --if-present
