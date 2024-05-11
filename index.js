@@ -76,27 +76,38 @@ const Message = mongoose.model('Message', messageSchema);
 // Connect to Redis
 const redisClient = redis.createClient(process.env.REDISCLIENT || null);
 
+redisClient.on('connect', () => {
+    console.log('Connected to Redis');
+});
+
+
+redisClient.on('error', (err) => {
+    console.error('Redis error:', err);
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
     // Register user with their socket ID in Redis
 
     socket.on('register', (token) => {
 
-        jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key', (err, user) => {
+        jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key', async(err, user) => {
             if (err) {
                 return socket.emit('registrationError', true)
             }
 
             let { userId } = user
-            redisClient.sadd(userId, socket.id);
+            let f = await redisClient.sadd(userId, socket.id);
 
+            // console.log(f, await redisClient.smembers(userId))
             // Remove user from Redis when socket disconnects
             socket.on('disconnect', () => {
-                redisClient.smembers(userId, (err, sockets) => {
+                redisClient.smembers(userId, async(err, sockets) => {
                     if (sockets.length === 1 && sockets[0] === socket.id) {
-                        redisClient.del(userId);
+                        await redisClient.del(userId);
                     } else {
-                        redisClient.srem(userId, socket.id);
+                        // console.log(socket.id)
+                        await redisClient.srem(userId, socket.id);
                     }
                 });
             });
@@ -131,20 +142,20 @@ app.post('/message', authMiddleware, (req, res) => {
 });
 
 // Express endpoint for deleting text
-app.delete('/message/:id', (req, res) => {
+app.post('/delete/:id', authMiddleware, (req, res) => {
     const messageId = req.params.id;
     Message.findByIdAndDelete(messageId).then((deletedMessage) => {
         if (!deletedMessage) {
-            return res.status(404).send('Message not found.');
+            return res.status(404).json({ sucess: false });;
         }
         redisClient.smembers(deletedMessage.userId, (err, sockets) => {
             sockets.forEach(socketId => {
                 io.to(socketId).emit('messageDeleted', messageId);
             });
         });
-
+        return res.status(200).json({ sucess: true });
     }).catch((error) => {
-        res.status(500).send('Error deleting message.');
+        res.status(500).json({ sucess: false });
     });
 });
 
