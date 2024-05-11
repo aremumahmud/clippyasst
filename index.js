@@ -107,7 +107,12 @@ io.on('connection', (socket) => {
 
 });
 
-// Express endpoint for storing text
+
+app.get('/', (req, res) => {
+        res.send('hi')
+
+    })
+    // Express endpoint for storing text
 app.post('/message', authMiddleware, (req, res) => {
     const { text } = req.body;
     const { userId } = req.user
