@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, "./dist")))
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "https://clippyui.vercel.app/",
+        origin: "https://clippyui.vercel.app",
         methods: ["GET", "POST"]
     }
 });
