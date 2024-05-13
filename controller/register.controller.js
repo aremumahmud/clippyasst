@@ -1,6 +1,9 @@
 // Register route
 const bcrypt = require('bcryptjs');
-const User = require('../models/user.model')
+const User = require('../models/user.model');
+const send_email = require('../utils/sendEmail');
+const welcome = require('../email_templates/welcome');
+const links = require('../utils/links');
 
 const registerController = async(req, res) => {
     try {
@@ -19,7 +22,15 @@ const registerController = async(req, res) => {
         const newUser = new User({ username, password: hashedPassword, dateJoined: new Date() });
         await newUser.save();
 
+
         res.status(201).json({ message: 'User registered successfully' });
+
+        send_email(username, 'ceo', 'Welcome to ClippyAsst', welcome, {
+            username,
+            instagram: links.instagram,
+            twitter: links.twitter,
+            linkedin: links.linkedin
+        })
     } catch (error) {
         res.status(500).json({ error: 'Internal server error', geniune: true });
     }

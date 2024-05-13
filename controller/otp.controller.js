@@ -1,6 +1,9 @@
 const userModel = require("../models/user.model")
 const generateOTP = require("../utils/generateOTP")
 const bcrypt = require('bcryptjs');
+const send_email = require("../utils/sendEmail");
+const otpEmail = require("../email_templates/otp");
+const links = require("../utils/links");
 
 const otpSendController = async(req, res) => {
     const { email: username } = req.body
@@ -20,7 +23,12 @@ const otpSendController = async(req, res) => {
 
         user.otp = otp
         await user.save()
-
+        send_email(username, null, null, otpEmail, {
+            otp,
+            instagram: links.instagram,
+            twitter: links.twitter,
+            linkedin: links.linkedin
+        })
         res.json({
             error: false
         })
